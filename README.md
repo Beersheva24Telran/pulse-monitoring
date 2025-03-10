@@ -1,12 +1,14 @@
 # Task definition
+## Write service pulse-values-reducer
+### computes the average value for a predefined number of values received from the stream pulse_values and sending to another stream average_pulse_values 
+## Uses the same record SensorData
+### Uses the same LatestValuesSaverImpl like for jump-pulse-recognizer (just another methods) for saving last pulse values for each patientId
+### Uses the same MiddlewareDataStream
+ put jump data inside new created DynamoDB table "average-pulse-values" as data stream <br>
+ for local debugging the TestStream as  MiddlewareDataStream should be used 
+### Adds two additional resources inside template.yaml
+PulseValuesReducerFunction (lambda function) <br>
+AveragePulseValuesStream (DynamoDB table)
+### Adds configuration for local debugging
 
-## Writing LatestValuesSaverMap class implementing LatestValuesSaver interface
-### Simple implementation based on HashMap in the project last-values-saver-impl
-## Update jump-pulse-recognizer
-### Uses LatestValuesSaver 
-### Introduces environment variable FACTOR with default value 0.5
-### Recognizes whether there a jump by comparing a last value with the current one
-Math.abs(last - current) / (float)last >= factor is criteria of a jump
-### Uses MiddlewareDataStream
- put jump data inside new created DynamoDB table "jump-pulse-values" as data stream
 
