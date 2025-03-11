@@ -33,6 +33,35 @@ Resources:
             FilterCriteria:
               Filters:
               - Pattern: '{"eventName": ["INSERT"]}'
+  PulseValuesReducerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: pulse-values-reducer
+      Handler: telran.monitoring.AppReducer::handleRequest
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Resource: '*' 
+            Action:
+            - dynamodb:*
+      Environment:
+        Variables:
+          LOGGER_LEVEL: finest
+          STREAM_NAME: !Ref AvgValuesDataStream
+          REDUCING_SIZE: 5
+          REDUCING_TIME_WINDOW: 60000
+          STREAM_CLASS_NAME: telran.monitoring.DynamoDbStreamSensorData
+      Events:
+        DynamoDbItemInsert:
+          Type: DynamoDB
+          Properties:
+            StartingPosition: LATEST
+            BatchSize: 1
+            Stream: !GetAtt PulseValuesStream.StreamArn
+            FilterCriteria:
+              Filters:
+              - Pattern: '{"eventName": ["INSERT"]}'
+            
   PulseValuesStream:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -69,7 +98,25 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
       StreamSpecification:
-        StreamViewType: NEW_IMAGE  
+        StreamViewType: NEW_IMAGE
+  AvgValuesDataStream:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      KeySchema:
+        - AttributeName: patientId
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: patientId
+          AttributeType: N
+        - AttributeName: timestamp
+          AttributeType: N     
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE        
 
               
           
