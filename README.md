@@ -1,14 +1,15 @@
-# Task definition
+# Tasks definition
 
-## Write service abnormal-values-recognizer
+## Write synchronous micro-service range-data-provider
+### Introducing record Range inside API project
+### Update template.yaml file
+### Getting data from AWS RDS service with predefined Postgres DB (DB will contain three tables)
+patients - data about patients with group_id, notification group_id<br>
+groups - data about groups with different minimal and maximal pulse values
+notification_groups -data about notification destinations (id, topic name, sms, email)
+## Update abnormal-values-recognizer 
+### Introduce HttpClient of RangeProviderClient interface
+### introduce functionality of sending logs to CloudWatch with some log group and streams
 
-### checks a current pulse value for patient id against a provided range
 
-range is provided by some local implementation of the interface RangeProviderClient <br>
-the interface RangeProviderClient inside the project abnormal-values-recognizer has method getRange(long patientId) returning record Range with minimal and maximal allowed values
 
-### all abnormal values should be pushed in a Data Stream as AnormalPulseValue
-
-AbnormalPulseValue is the Record with patientId, value and Range fields
-
-### Local invocation using local debugger of VSCode for testing purpose
