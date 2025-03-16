@@ -7,7 +7,7 @@ import telran.monitoring.api.Range;
 import telran.monitoring.logging.Logger;
 
 public class RangeProviderClientMap extends AbstractRangeProviderClient{
-    Logger logger;
+   
     HashMap<Long, Range> map = new HashMap<>(){{
         put(101L, new Range(35, 250));
         put(102L, new Range(55, 210));
