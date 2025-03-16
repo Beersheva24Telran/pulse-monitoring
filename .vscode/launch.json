@@ -5,6 +5,41 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "telran.monitoring.Main",
+      "projectName": "pulse-values-imitator"
+    },
+    {
+      "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "telran.monitoring.Main",
+      "projectName": "pulse-values-receiver"
+    },
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
+      "name": "pulse_monitoring:PulseAbnormalValuesRecognizerFunction (java21)",
+      "invokeTarget": {
+        "target": "template",
+        "templatePath": "${workspaceFolder}/template.yaml",
+        "logicalId": "PulseAbnormalValuesRecognizerFunction"
+      },
+      "lambda": {
+        "payload": {
+          "path": "${workspaceFolder}/events/pulse_values_for_abnormal.json"
+        },
+        "environmentVariables": {
+          "LOGGER_LEVEL": "finest",
+          "STREAM_NAME": "abnormal-pulse-values",
+          "STREAM_CLASS_NAME": "telran.monitoring.TestStream",
+          "RANGE_PROVIDER_CLASS": "telran.monitoring.RangeProviderClientMap"
+        }
+      }
+    },
+    {
       "type": "aws-sam",
       "request": "direct-invoke",
       "name": "pulse_monitoring:JumpRecognizerFunction (java21)",
@@ -49,43 +84,19 @@
     {
       "type": "aws-sam",
       "request": "direct-invoke",
-      "name": "pulse_monitoring:PulseValuesStream (java21)",
+      "name": "pulse_monitoring:RangeDataProviderFunction (java21)",
       "invokeTarget": {
         "target": "template",
         "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "PulseValuesStream"
+        "logicalId": "RangeDataProviderFunction"
       },
       "lambda": {
-        "payload": {},
-        "environmentVariables": {}
-      }
-    },
-    {
-      "type": "aws-sam",
-      "request": "direct-invoke",
-      "name": "pulse_monitoring:JumpDataStream (java21)",
-      "invokeTarget": {
-        "target": "template",
-        "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "JumpDataStream"
-      },
-      "lambda": {
-        "payload": {},
-        "environmentVariables": {}
-      }
-    },
-    {
-      "type": "aws-sam",
-      "request": "direct-invoke",
-      "name": "pulse_monitoring:AvgValuesDataStream (java21)",
-      "invokeTarget": {
-        "target": "template",
-        "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "AvgValuesDataStream"
-      },
-      "lambda": {
-        "payload": {},
-        "environmentVariables": {}
+        "payload": {
+          "path": "${workspaceFolder}/events/range_data_provider.json"
+        },
+        "environmentVariables": {
+          "DB_PASSWORD": "12345.Com"
+        }
       }
     }
   ]
