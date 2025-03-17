@@ -17,10 +17,10 @@ public class DynamoDbStreamNotificationData extends DynamoDbStream<NotificationD
     Map<String, AttributeValue> getMap(NotificationData notificationData) {
         HashMap<String, AttributeValue> map = new HashMap<>(){{
             put("patientId",AttributeValue.builder().n(notificationData.patientId() + "").build());
-            put("notificationId",AttributeValue.builder().n(notificationData.notificationId() + "").build());
             put("email",AttributeValue.builder().s(notificationData.email() + "").build());
             put("timestamp",AttributeValue.builder().n(notificationData.timestamp() + "").build());
-            put("isConfirmed",AttributeValue.builder().bool(notificationData.isConfirmed()).build());
+            put("notificationText",AttributeValue.builder().s(notificationData.notificationText() + "").build());
+            
         }};
         return map;
     }
