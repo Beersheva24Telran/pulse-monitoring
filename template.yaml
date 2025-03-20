@@ -24,6 +24,7 @@ Resources:
           LOGGER_LEVEL: finest
           STREAM_NAME: !Ref JumpDataStream
           STREAM_CLASS_NAME: telran.monitoring.DynamoDbStreamJumpPulseData
+          BUCKET_NAME: !Ref BucketForJump
       Events:
         DynamoDbItemInsert:
           Type: DynamoDB
@@ -45,6 +46,7 @@ Resources:
             Resource: '*' 
             Action:
             - dynamodb:*
+            - s3:*
       Environment:
         Variables:
           LOGGER_LEVEL: finest
@@ -52,6 +54,7 @@ Resources:
           REDUCING_SIZE: 5
           REDUCING_TIME_WINDOW: 600000
           STREAM_CLASS_NAME: telran.monitoring.DynamoDbStreamSensorData
+          BUCKET_NAME: !Ref BacketForReducing
       Events:
         DynamoDbItemInsert:
           Type: DynamoDB
