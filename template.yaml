@@ -8,33 +8,6 @@ Globals:
     Architectures:
       - x86_64
 Resources:
-  JumpRecognizerFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: jump-pulse-recognizer
-      Handler: telran.monitoring.App::handleRequest
-      Policies:
-        - Statement:
-          - Effect: Allow
-            Resource: '*' 
-            Action:
-            - dynamodb:*
-      Environment:
-        Variables:
-          LOGGER_LEVEL: finest
-          STREAM_NAME: !Ref JumpDataStream
-          STREAM_CLASS_NAME: telran.monitoring.DynamoDbStreamJumpPulseData
-         
-      Events:
-        DynamoDbItemInsert:
-          Type: DynamoDB
-          Properties:
-            StartingPosition: LATEST
-            BatchSize: 1
-            Stream: !GetAtt PulseValuesStream.StreamArn
-            FilterCriteria:
-              Filters:
-              - Pattern: '{"eventName": ["INSERT"]}'
   PulseValuesReducerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -54,7 +27,6 @@ Resources:
           REDUCING_SIZE: 5
           REDUCING_TIME_WINDOW: 600000
           STREAM_CLASS_NAME: telran.monitoring.DynamoDbStreamSensorData
-          BUCKET_NAME: !Ref BacketForReducing
       Events:
         DynamoDbItemInsert:
           Type: DynamoDB
@@ -85,24 +57,7 @@ Resources:
         WriteCapacityUnits: 5
       StreamSpecification:
         StreamViewType: NEW_IMAGE
-  JumpDataStream:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      KeySchema:
-        - AttributeName: patientId
-          KeyType: HASH
-        - AttributeName: timestamp
-          KeyType: RANGE
-      AttributeDefinitions:
-        - AttributeName: patientId
-          AttributeType: N
-        - AttributeName: timestamp
-          AttributeType: N     
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      StreamSpecification:
-        StreamViewType: NEW_IMAGE
+ 
   AvgValuesDataStream:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -121,68 +76,7 @@ Resources:
         WriteCapacityUnits: 5
       StreamSpecification:
         StreamViewType: NEW_IMAGE        
-  AbnormalValuesDataStream:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      KeySchema:
-        - AttributeName: patientId
-          KeyType: HASH
-        - AttributeName: timestamp
-          KeyType: RANGE
-      AttributeDefinitions:
-        - AttributeName: patientId
-          AttributeType: N
-        - AttributeName: timestamp
-          AttributeType: N     
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      StreamSpecification:
-        StreamViewType: NEW_IMAGE 
-  PulseAbnormalValuesRecognizerFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: abnormal-values-recognizer
-      Handler: telran.monitoring.AppAbnormalRecognizer::handleRequest
-      FunctionName: abnormal-values-recognizer
-      Policies:
-        - Statement:
-          - Effect: Allow
-            Resource: '*' 
-            Action:
-            - dynamodb:*
-      Environment:
-        Variables:
-          LOGGER_LEVEL: finest
-          STREAM_NAME: !Ref AbnormalValuesDataStream
-          RANGE_PROVIDER_CLASS: telran.monitoring.RangeProviderClientHttp
-          STREAM_CLASS_NAME: telran.monitoring.DynamoDbAbnormalPulseValueStream
-          RANGE_PROVIDER_URL: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/range/"
-      Events:
-        DynamoDbItemInsert:
-          Type: DynamoDB
-          Properties:
-            StartingPosition: LATEST
-            BatchSize: 1
-            Stream: !GetAtt PulseValuesStream.StreamArn
-            FilterCriteria:
-              Filters:
-              - Pattern: '{"eventName": ["INSERT"]}'      
-  RangeDataProviderFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: range-data-provider
-      Handler: telran.monitoring.AppRangeDataProvider::handleRequest
-      
-      Environment: 
-        Variables:
-          DB_PASSWORD: 12345.Com
-      Events:
-        RangeDataProvider:
-          Type: Api 
-          Properties:
-            Path: /range
-            Method: get
+  
   ReducedValuesSaverFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -197,6 +91,7 @@ Resources:
       Environment:
         Variables:
           LOGGER_LEVEL: finest
+          DB_PASSWORD: 12345.com
       Events:
         DynamoDbItemInsert:
           Type: DynamoDB
@@ -207,14 +102,7 @@ Resources:
             FilterCriteria:
               Filters:
               - Pattern: '{"eventName": ["INSERT"]}'
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  RangeDataProviderApi:
-    Description: "API Gateway endpoint URL for Prod stage for Range Data Provider Function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/range/"
-          
+
           
 
       

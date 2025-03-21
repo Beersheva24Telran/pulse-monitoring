@@ -18,47 +18,8 @@
       "mainClass": "telran.monitoring.Main",
       "projectName": "pulse-values-receiver"
     },
-    {
-      "type": "aws-sam",
-      "request": "direct-invoke",
-      "name": "pulse_monitoring:PulseAbnormalValuesRecognizerFunction (java21)",
-      "invokeTarget": {
-        "target": "template",
-        "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "PulseAbnormalValuesRecognizerFunction"
-      },
-      "lambda": {
-        "payload": {
-          "path": "${workspaceFolder}/events/pulse_values_for_abnormal.json"
-        },
-        "environmentVariables": {
-          "LOGGER_LEVEL": "finest",
-          "STREAM_NAME": "abnormal-pulse-values",
-          "STREAM_CLASS_NAME": "telran.monitoring.TestStream",
-          "RANGE_PROVIDER_CLASS": "telran.monitoring.RangeProviderClientMap"
-        }
-      }
-    },
-    {
-      "type": "aws-sam",
-      "request": "direct-invoke",
-      "name": "pulse_monitoring:JumpRecognizerFunction (java21)",
-      "invokeTarget": {
-        "target": "template",
-        "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "JumpRecognizerFunction"
-      },
-      "lambda": {
-        "payload": {
-          "path": "${workspaceFolder}/events/pulse_values.json"
-        },
-        "environmentVariables": {
-          "LOGGER_LEVEL": "finest",
-          "STREAM_NAME": "jump-pulse-value",
-          "STREAM_CLASS_NAME": "telran.monitoring.TestStream"
-        }
-      }
-    },
+   
+    
     {
       "type": "aws-sam",
       "request": "direct-invoke",
@@ -84,20 +45,22 @@
     {
       "type": "aws-sam",
       "request": "direct-invoke",
-      "name": "pulse_monitoring:RangeDataProviderFunction (java21)",
+      "name": "pulse_monitoring:ReducedValuesSaverFunction (java21)",
       "invokeTarget": {
         "target": "template",
         "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "RangeDataProviderFunction"
+        "logicalId": "ReducedValuesSaverFunction"
       },
       "lambda": {
         "payload": {
-          "path": "${workspaceFolder}/events/range_data_provider.json"
+          "path": "${workspaceFolder}/events/pulse_values.json"
         },
         "environmentVariables": {
-          "DB_PASSWORD": "12345.Com"
+          "LOGGER_LEVEL": "finest",
+          "DB_PASSWORD":"12345.com"
         }
       }
-    }
+    },
+    
   ]
 }
