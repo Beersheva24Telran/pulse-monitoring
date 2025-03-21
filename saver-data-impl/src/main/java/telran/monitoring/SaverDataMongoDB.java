@@ -13,8 +13,8 @@ public class SaverDataMongoDB implements SaverData {
     Map<String, String> envMap = System.getenv();
     static final String DEFAULT_DB_PROTOCOL = "mongodb+srv";
     static final String DEFAULT_DB_USER = "root";
-    static final String DEFAULT_DB_CONNECTION_OPTIONS = "?retryWrites=true&w=majority&appName=Cluster0";
-    static final String DEFAULT_HOST = "@cluster0.ujqan.mongodb.net/";
+    static final String DEFAULT_DB_CONNECTION_OPTIONS = "retryWrites=true&w=majority&appName=Cluster0";
+    static final String DEFAULT_HOST = "cluster0.ujqan.mongodb.net";
     static final String DEFAULT_PORT = "";
     static final String DEFAULT_DATABASE_NAME = "pulse_monitoring";
     static final String DEFAULT_COLLECTION_NAME = "avg_pulse_values";
@@ -31,12 +31,12 @@ public class SaverDataMongoDB implements SaverData {
     String connectionString = getConnectionString();
 
     public SaverDataMongoDB() {
-
+        configLog();
         mongoClient = MongoClients.create(connectionString);
         database = mongoClient.getDatabase(databaseName);
         collection = database.getCollection(collectionName);
         logger.log("info", "connection to MongoDB established");
-        configLog();
+
     }
 
     private void configLog() {
@@ -57,12 +57,12 @@ public class SaverDataMongoDB implements SaverData {
     public void saveData(Map<String, Object> data) {
         Document doc = getMongoDocument(data);
         var res = collection.insertOne(doc);
-        logger.log("finest", res.getInsertedId()+ " inserted document: " + doc);
+        logger.log("finest", res.getInsertedId() + " inserted document: " + doc);
     }
 
     private Document getMongoDocument(Map<String, Object> data) {
         Document doc = new Document(data);
-       return doc;
+        return doc;
     }
 
     private String getPort() {

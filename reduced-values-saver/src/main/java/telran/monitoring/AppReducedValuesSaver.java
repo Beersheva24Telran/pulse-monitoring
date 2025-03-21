@@ -17,10 +17,12 @@ public class AppReducedValuesSaver {
     Map<String, String> env = System.getenv();
     Logger logger = new LoggerStandard("reduced-values-saver");
     String dataSaverClassName = getDataSaverClassName();
-    SaverData saverData = SaverData.getSaverDataInstance(dataSaverClassName, logger);
+    SaverData saverData;
 
     public AppReducedValuesSaver() {
         logger.log("config", "Data Saver class name is " + dataSaverClassName);
+        saverData = SaverData.getSaverDataInstance(dataSaverClassName, logger);
+        
     }
 
     private String getDataSaverClassName() {
@@ -59,9 +61,9 @@ public class AppReducedValuesSaver {
         return map;
     }
 
-    private ZonedDateTime getDateTime(long timestamp) {
+    private LocalDateTime getDateTime(long timestamp) {
         Instant instant = Instant.ofEpochSecond(timestamp / 1000);
-        ZonedDateTime dateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault());
+        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         return dateTime;
     }
 

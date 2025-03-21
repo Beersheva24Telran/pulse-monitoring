@@ -42,6 +42,25 @@
     {
       "type": "aws-sam",
       "request": "direct-invoke",
+      "name": "pulse_monitoring:ReducedValuesSaverFunction (java21)",
+      "invokeTarget": {
+        "target": "template",
+        "templatePath": "${workspaceFolder}/template.yaml",
+        "logicalId": "ReducedValuesSaverFunction"
+      },
+      "lambda": {
+        "payload": {
+          "path": "${workspaceFolder}/events/pulse_values.json"
+        },
+        "environmentVariables": {
+          "LOGGER_LEVEL": "finest",
+          "DB_PASSWORD":"12345.com"
+        }
+      }
+    },
+    {
+      "type": "aws-sam",
+      "request": "direct-invoke",
       "name": "pulse_monitoring:JumpRecognizerFunction (java21)",
       "invokeTarget": {
         "target": "template",
