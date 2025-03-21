@@ -14,7 +14,7 @@ public class Main {
     static final int MAX_PULSE_VALUE = 240;
     static final long TIMEOUT_SEND = 500;
     static final int TIMEOUT_RESPONSE = 10000;
-    static final String DEFAULT_HOST = "localhost";
+    static final String DEFAULT_HOST = "100.24.115.50";
     static final int DEFAULT_PORT = 5000;
     static final int DEFAULT_N_PATIENTS = 10;
     static final int DEFAULT_N_PACKETS = 100;

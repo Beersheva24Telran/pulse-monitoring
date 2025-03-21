@@ -24,7 +24,7 @@ Resources:
           LOGGER_LEVEL: finest
           STREAM_NAME: !Ref JumpDataStream
           STREAM_CLASS_NAME: telran.monitoring.DynamoDbStreamJumpPulseData
-          BUCKET_NAME: !Ref BucketForJump
+         
       Events:
         DynamoDbItemInsert:
           Type: DynamoDB
@@ -183,7 +183,30 @@ Resources:
           Properties:
             Path: /range
             Method: get
-
+  ReducedValuesSaverFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: reduced-values-saver
+      Handler: telran.monitoring.AppReducedValuesSaver::handleRequest
+      Policies:
+        - Statement:
+          - Effect: Allow
+            Resource: '*' 
+            Action:
+            - dynamodb:*
+      Environment:
+        Variables:
+          LOGGER_LEVEL: finest
+      Events:
+        DynamoDbItemInsert:
+          Type: DynamoDB
+          Properties:
+            StartingPosition: LATEST
+            BatchSize: 1
+            Stream: !GetAtt AvgValuesDataStream.StreamArn
+            FilterCriteria:
+              Filters:
+              - Pattern: '{"eventName": ["INSERT"]}'
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
