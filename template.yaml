@@ -24,6 +24,8 @@ Resources:
           LOGGER_LEVEL: finest
           STREAM_NAME: !Ref JumpDataStream
           STREAM_CLASS_NAME: telran.monitoring.DynamoDbStreamJumpPulseData
+          BUCKET_NAME: !Ref JumpRecognizerBucket
+          REGION_FOR_AWS: !Sub ${AWS::Region}
          
       Events:
         DynamoDbItemInsert:
@@ -183,39 +185,24 @@ Resources:
           Properties:
             Path: /range
             Method: get
-  ReducedValuesSaverFunction:
-    Type: AWS::Serverless::Function
+ 
+  JumpRecognizerBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
     Properties:
-      CodeUri: reduced-values-saver
-      Handler: telran.monitoring.AppReducedValuesSaver::handleRequest
-      Policies:
-        - Statement:
-          - Effect: Allow
-            Resource: '*' 
-            Action:
-            - dynamodb:*
-      Environment:
-        Variables:
-          LOGGER_LEVEL: finest
-      Events:
-        DynamoDbItemInsert:
-          Type: DynamoDB
-          Properties:
-            StartingPosition: LATEST
-            BatchSize: 1
-            Stream: !GetAtt AvgValuesDataStream.StreamArn
-            FilterCriteria:
-              Filters:
-              - Pattern: '{"eventName": ["INSERT"]}'
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  RangeDataProviderApi:
-    Description: "API Gateway endpoint URL for Prod stage for Range Data Provider Function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/range/"
-          
-          
+      BucketName: !Sub jump-recognizer-bucket-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256            
+
 
       
         
