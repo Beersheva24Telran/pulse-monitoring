@@ -19,6 +19,11 @@ Resources:
             Resource: '*' 
             Action:
             - dynamodb:*
+            - s3:*
+        - S3ReadPolicy:
+            BucketName: !Ref JumpRecognizerBucket
+        - S3WritePolicy:
+            BucketName: !Ref JumpRecognizerBucket 
       Environment:
         Variables:
           LOGGER_LEVEL: finest
