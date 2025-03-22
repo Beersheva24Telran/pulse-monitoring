@@ -20,6 +20,10 @@ Resources:
             Action:
             - dynamodb:*
             - s3:*
+        - S3ReadPolicy:
+            BucketName: !Ref AvgValuesBucket
+        - S3WritePolicy:
+            BucketName: !Ref AvgValuesBucket    
       Environment:
         Variables:
           LOGGER_LEVEL: finest
@@ -27,6 +31,9 @@ Resources:
           REDUCING_SIZE: 5
           REDUCING_TIME_WINDOW: 600000
           STREAM_CLASS_NAME: telran.monitoring.DynamoDbStreamSensorData
+          BUCKET_NAME: !Ref AvgValuesBucket
+          LATEST_VALUES_SAVER_CLASS_NAME: "telran.monitoring.LatestDataSaverS3"
+          REGION_FOR_AWS: !Sub ${AWS::Region}
       Events:
         DynamoDbItemInsert:
           Type: DynamoDB
@@ -102,7 +109,23 @@ Resources:
             FilterCriteria:
               Filters:
               - Pattern: '{"eventName": ["INSERT"]}'
-
+  AvgValuesBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub avg-values-bucket-${AWS::AccountId}-${AWS::Region}
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      
           
 
       

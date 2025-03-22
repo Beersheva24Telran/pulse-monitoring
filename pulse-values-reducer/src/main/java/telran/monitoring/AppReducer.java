@@ -18,6 +18,7 @@ public class AppReducer {
     private static final String DEFAULT_STREAM_CLASS_NAME = "telran.monitoring.DynamoDbStreamSensorData";
     private static final long DEFAULT_REDUCING_TIME_WINDOW = 10 * 60 * 1000;
     private static final int DEFAULT_REDUCING_SIZE = 100;
+    static final String DEFAULT_LATEST_VALUES_SAVER_CLASS_NAME = "telran.monitoring.LatestDataSaverS3";
     private Map<String, String> env = System.getenv();
     private String streamName = getStreamName();
 
@@ -26,18 +27,25 @@ public class AppReducer {
     MiddlewareDataStream<SensorData> dataStream;
     int reducingSize = getReducingSize();
     long reducingTimeWindow = getReducingTimeWindow();
-    LatestValuesSaver latestValuesSaver = new LatestValuesSaverMap(logger);
+    LatestValuesSaver latestValuesSaver;
+    private String latestValuesSaverClassName = getLatestValuesSaverClassName();
 
     @SuppressWarnings("unchecked")
     public AppReducer() {
         logger.log("config", "Stream name is " + streamName);
+        logger.log("config", "Latest Values Saver Class Name is " + latestValuesSaverClassName);
         try {
 
             dataStream = (MiddlewareDataStream<SensorData>) MiddlewareDataStreamFactory.getStream(streamClassName,
                     streamName);
+            latestValuesSaver = LatestValuesSaver.getLatestValuesSaver(latestValuesSaverClassName, logger);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getLatestValuesSaverClassName() {
+        return env.getOrDefault("LATEST_VALUES_SAVER_CLASS_NAME", DEFAULT_LATEST_VALUES_SAVER_CLASS_NAME);
     }
 
     private long getReducingTimeWindow() {
@@ -118,7 +126,7 @@ public class AppReducer {
             if (latestData.size() >= reducingSize ||
                     System.currentTimeMillis() - lastTimestamp >= reducingTimeWindow) {
                 sensorDataResult = new SensorData(patientId, getAvgValue(latestData),
-                 lastTimestamp);
+                        lastTimestamp);
                 latestValuesSaver.clearValues(patientId);
             }
         }

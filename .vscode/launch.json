@@ -38,7 +38,8 @@
           "STREAM_NAME": "average-pulse-values",
           "REDUCING_SIZE": "2",
           "REDUCING_TIME_WINDOW": "60000000000000",
-          "STREAM_CLASS_NAME": "telran.monitoring.TestStream"
+          "STREAM_CLASS_NAME": "telran.monitoring.TestStream",
+          "LATEST_VALUES_SAVER_CLASS_NAME": "telran.monitoring.LatestValuesSaverMap"
         }
       }
     },
