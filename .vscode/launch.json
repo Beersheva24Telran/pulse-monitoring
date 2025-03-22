@@ -18,46 +18,8 @@
       "mainClass": "telran.monitoring.Main",
       "projectName": "pulse-values-receiver"
     },
-    {
-      "type": "aws-sam",
-      "request": "direct-invoke",
-      "name": "pulse_monitoring:PulseAbnormalValuesRecognizerFunction (java21)",
-      "invokeTarget": {
-        "target": "template",
-        "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "PulseAbnormalValuesRecognizerFunction"
-      },
-      "lambda": {
-        "payload": {
-          "path": "${workspaceFolder}/events/pulse_values_for_abnormal.json"
-        },
-        "environmentVariables": {
-          "LOGGER_LEVEL": "finest",
-          "STREAM_NAME": "abnormal-pulse-values",
-          "STREAM_CLASS_NAME": "telran.monitoring.TestStream",
-          "RANGE_PROVIDER_CLASS": "telran.monitoring.RangeProviderClientMap"
-        }
-      }
-    },
-    {
-      "type": "aws-sam",
-      "request": "direct-invoke",
-      "name": "pulse_monitoring:ReducedValuesSaverFunction (java21)",
-      "invokeTarget": {
-        "target": "template",
-        "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "ReducedValuesSaverFunction"
-      },
-      "lambda": {
-        "payload": {
-          "path": "${workspaceFolder}/events/pulse_values.json"
-        },
-        "environmentVariables": {
-          "LOGGER_LEVEL": "finest",
-          "DB_PASSWORD":"12345.com"
-        }
-      }
-    },
+   
+   
     {
       "type": "aws-sam",
       "request": "direct-invoke",
@@ -74,49 +36,12 @@
         "environmentVariables": {
           "LOGGER_LEVEL": "finest",
           "STREAM_NAME": "jump-pulse-value",
-          "STREAM_CLASS_NAME": "telran.monitoring.TestStream"
-        }
-      }
-    },
-    {
-      "type": "aws-sam",
-      "request": "direct-invoke",
-      "name": "pulse_monitoring:PulseValuesReducerFunction (java21)",
-      "invokeTarget": {
-        "target": "template",
-        "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "PulseValuesReducerFunction"
-      },
-      "lambda": {
-        "payload": {
-          "path": "${workspaceFolder}/events/pulse_values.json"
-        },
-        "environmentVariables": {
-          "LOGGER_LEVEL": "finest",
-          "STREAM_NAME": "average-pulse-values",
-          "REDUCING_SIZE": "2",
-          "REDUCING_TIME_WINDOW": "60000000000000",
-          "STREAM_CLASS_NAME": "telran.monitoring.TestStream"
-        }
-      }
-    },
-    {
-      "type": "aws-sam",
-      "request": "direct-invoke",
-      "name": "pulse_monitoring:RangeDataProviderFunction (java21)",
-      "invokeTarget": {
-        "target": "template",
-        "templatePath": "${workspaceFolder}/template.yaml",
-        "logicalId": "RangeDataProviderFunction"
-      },
-      "lambda": {
-        "payload": {
-          "path": "${workspaceFolder}/events/range_data_provider.json"
-        },
-        "environmentVariables": {
-          "DB_PASSWORD": "12345.Com"
+          "STREAM_CLASS_NAME": "telran.monitoring.TestStream",
+          "LATEST_VALUES_SAVER_CLASS_NAME": "telran.monitoring.LatestValuesSaverMap"
         }
       }
     }
+    
+    
   ]
 }

@@ -17,22 +17,37 @@ public class App {
   private static final String DEFAULT_STREAM_CLASS_NAME = "telran.monitoring.DynamoDbStreamJumpPulseData";
   private static final String DEFAULT_STREAM_NAME = "jump_pulse_values";
   private static final float DEFAULT_JUMP_FACTOR = 0.5f;
+  private static final String DEFAULT_LATEST_VALUES_SAVER_CLASS_NAME = "telran.minitoring.LatestDataSaverS3";
   private Map<String, String> env = System.getenv();
   private String streamName = getStreamName();
   Logger logger = new LoggerStandard(streamName);
+  private String latestValuesSaverClassName = getLatestValuesSaverClassName();
+  float factor = getFactor();
   MiddlewareDataStream<JumpPulseData> dataStream;
- 
-  LatestValuesSaver latestValuesSaver = new LatestValuesSaverMap(logger);
+
+  LatestValuesSaver latestValuesSaver;
 
   @SuppressWarnings("unchecked")
   public App() {
+    configLog();
     try {
 
       dataStream = (MiddlewareDataStream<JumpPulseData>) MiddlewareDataStreamFactory.getStream(getStreamClassName(),
           getStreamName());
+      latestValuesSaver = LatestValuesSaver.getLatestValuesSaver(latestValuesSaverClassName, logger);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private void configLog() {
+    logger.log("config", "streamName is " + streamName);
+    logger.log("config", "factor is " + factor);
+    logger.log("config", "Latest values saver class name is " + latestValuesSaverClassName);
+  }
+
+  private String getLatestValuesSaverClassName() {
+    return env.getOrDefault("LATEST_VALUES_SAVER_CLASS_NAME", DEFAULT_LATEST_VALUES_SAVER_CLASS_NAME);
   }
 
   public void handleRequest(final DynamodbEvent event, final Context context) {
@@ -56,18 +71,17 @@ public class App {
     String eventName = r.getEventName();
     if (eventName.equalsIgnoreCase("INSERT")) {
       Map<String, AttributeValue> map = r.getDynamodb().getNewImage();
-      if(map != null) {
+      if (map != null) {
         SensorData sensorData = getSensorData(map);
-      logger.log("finest", sensorData.toString());
-      JumpPulseData jumpData = jumpRecognition(sensorData);
-      if (jumpData != null) {
-        dataStream.publish(jumpData);
-        logger.log("debug", "Published Jump with data: " + jumpData);
-      }
+        logger.log("finest", sensorData.toString());
+        JumpPulseData jumpData = jumpRecognition(sensorData);
+        if (jumpData != null) {
+          dataStream.publish(jumpData);
+          logger.log("debug", "Published Jump with data: " + jumpData);
+        }
       } else {
         logger.log("severe", "no new image found in event");
       }
-      
 
     } else {
       logger.log("severe", eventName + " not supposed for processing");
@@ -89,7 +103,7 @@ public class App {
     if (oldValue != 0 && isJump(oldValue, currentValue)) {
       jumpDataResult = new JumpPulseData(patientId, oldValue, currentValue,
           System.currentTimeMillis());
-         
+
     }
     if (oldValue != currentValue) {
       latestValuesSaver.clearAndAddValue(patientId, sensorData);
@@ -98,7 +112,7 @@ public class App {
   }
 
   private boolean isJump(int oldValue, int currentValue) {
-    float factor = getFactor();
+   
     boolean res = Math.abs(currentValue - oldValue) / (float) oldValue >= factor;
     return res;
   }
@@ -108,7 +122,7 @@ public class App {
     String factorStr = env.getOrDefault("JUMP_FACTOR", DEFAULT_JUMP_FACTOR + "");
     try {
       res = Float.parseFloat(factorStr);
-    } catch(NumberFormatException e) {
+    } catch (NumberFormatException e) {
       logger.log("severe", "Wrong jump factor env value, default value is taken " + DEFAULT_JUMP_FACTOR);
     }
     return res;
