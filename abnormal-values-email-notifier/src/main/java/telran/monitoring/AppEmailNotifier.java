@@ -27,12 +27,11 @@ public class AppEmailNotifier {
     public AppEmailNotifier() {
         configLog();
         try {
-
             providerClient = DataProviderClient.getDataProviderClient(providerClientClassName,
                     logger, providerClientConnectionString);
             mailSender = MailSender.getMailSender(mailSenderClassName, logger);
         } catch (Exception e) {
-            logger.log("severe", "error: " + e);
+            logger.log("severe", "error: new code " + e);
             throw new RuntimeException(e);
         }
     }
