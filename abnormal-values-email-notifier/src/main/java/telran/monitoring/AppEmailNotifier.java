@@ -6,47 +6,38 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent.DynamodbStreamRecord;
 import com.amazonaws.services.lambda.runtime.events.models.dynamodb.AttributeValue;
-
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.ses.SesClient;
-import software.amazon.awssdk.services.ses.model.Body;
-import software.amazon.awssdk.services.ses.model.Content;
-import software.amazon.awssdk.services.ses.model.Destination;
-import software.amazon.awssdk.services.ses.model.Message;
-import software.amazon.awssdk.services.ses.model.SendEmailRequest;
-import software.amazon.awssdk.services.ses.model.SendEmailResponse;
-import software.amazon.awssdk.services.ses.model.SesException;
 import telran.monitoring.api.AbnormalPulseValue;
 import telran.monitoring.logging.*;
 
 public class AppEmailNotifier {
-    private static final String DEFAULT_REGION_FOR_AWS = "us-east-1";
-    private static final String DEFAULT_EMAIL_PROVIDER_CLASS_NAME = "telran.monitoring.EmailProviderClientHttp";
-    private static final String DEFAULT_ADDRESS_PREFIX = "";
-    public static final String DEFAULT_SENDER_EMAIL_ADDRESS = "yuriaws25@gmail.com";
+    private static final String DEFAULT_EMAIL_PROVIDER_CLASS_NAME = "telran.monitoring.DataProviderClientHttp";
+    private static final String DEFAULT_EMAIL_SENDER_CLASS_NAME = "telran.monitoring.MailSenderSes";
     private static final String DEFAULT_EMAIL_SUBJECT = "Abnormal pulse value patient ";
+    private static final String DEFAULT_ADDRESS_PREFIX = "yuriaws25+";
     Logger logger = new LoggerStandard("email-notifier");
     Map<String, String> env = System.getenv();
-    String providerClientClassName = getProviderClientClassName();
-    String senderEmail = getSenderEmail();
+    String mailSenderClassName = getMailSenderClassName();
     String addressPrefix = getAddressPrefix();
-    Region region = getRegion();
+    String providerClientClassName = getProviderClientClassName();
     String subject = getSubject();
-    SesClient sesClient;
-    EmailProviderClient providerClient;
+    DataProviderClient providerClient;
+    MailSender mailSender;
+    private String providerClientConnectionString = getProviderClientConectionString();
 
     public AppEmailNotifier() {
         configLog();
         try {
-            sesClient = SesClient.builder()
-                    .region(region)
-                    .build();
-            providerClient = EmailProviderClient.getEmailProviderClient(providerClientClassName,
-                    logger);
 
+            providerClient = DataProviderClient.getDataProviderClient(providerClientClassName,
+                    logger, providerClientConnectionString);
+            mailSender = MailSender.getMailSender(mailSenderClassName, logger);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getMailSenderClassName() {
+        return env.getOrDefault("EMAIL_SENDER_CLASS_NAME", DEFAULT_EMAIL_SENDER_CLASS_NAME);
     }
 
     private String getSubject() {
@@ -54,31 +45,20 @@ public class AppEmailNotifier {
                 DEFAULT_EMAIL_SUBJECT);
     }
 
+    private String getAddressPrefix() {
+        return env.getOrDefault("ADDRESS_PREFIX", DEFAULT_ADDRESS_PREFIX);
+    }
+
     private void configLog() {
         logger.log("config", "providerClientClassName is " + providerClientClassName);
-        logger.log("config", "emailAddressSender is " + senderEmail);
-        logger.log("config", "addressPrefix is " + addressPrefix);
-        logger.log("config", "region is " + region);
+        logger.log("FINEST", "address prefix is " + addressPrefix);
         logger.log("config", "email subject " + subject);
+        logger.log("config", "Email Sender Class Name is " + mailSenderClassName);
     }
 
     private String getProviderClientClassName() {
         return env.getOrDefault("EMAIL_PROVIDER_CLASS_NAME",
                 DEFAULT_EMAIL_PROVIDER_CLASS_NAME);
-    }
-
-    private String getAddressPrefix() {
-        return env.getOrDefault("ADDRESS_PREFIX", DEFAULT_ADDRESS_PREFIX);
-    }
-
-    private String getSenderEmail() {
-        return env.getOrDefault("SENDER_EMAIL_ADDRESS", DEFAULT_SENDER_EMAIL_ADDRESS);
-    }
-
-    private Region getRegion() {
-        String regionStr = env.getOrDefault("REGION_FOR_AWS", DEFAULT_REGION_FOR_AWS);
-        logger.log("finest", "region value of the REGION_FOR_AWS variable is " + regionStr);
-        return Region.of(regionStr);
     }
 
     public void handleRequest(final DynamodbEvent event, final Context context) {
@@ -93,8 +73,7 @@ public class AppEmailNotifier {
             if (map != null) {
                 AbnormalPulseValue abnormalPulseValue = getAbnormalPulseValue(map);
                 logger.log("finest", abnormalPulseValue.toString());
-                SendEmailResponse response = sendMail(abnormalPulseValue);
-                logger.log("fine", "response: " + response);
+                sendMail(abnormalPulseValue);
 
             } else {
                 logger.log("severe", "no new image found in event");
@@ -105,28 +84,20 @@ public class AppEmailNotifier {
         }
     }
 
-    private SendEmailResponse sendMail(AbnormalPulseValue abnormalPulseValue) {
+    private void sendMail(AbnormalPulseValue abnormalPulseValue) {
         long patientId = abnormalPulseValue.patientId();
-        String recipientEmail = addressPrefix + providerClient.getNotificationEmailAddress(patientId);
-        try {
-            SendEmailRequest emailRequest = SendEmailRequest.builder()
-                    .destination(Destination.builder().toAddresses(recipientEmail).build())
-                    .message(Message.builder()
-                            .subject(Content.builder().data(subject + patientId).build())
-                            .body(Body.builder()
-                                    .text(Content.builder().data(getEmailText(abnormalPulseValue)).build())
-                                    .build())
-                            .build())
-                    .source(senderEmail) // Must be the verified email
-                    .build();
+        String recipientEmail = addressPrefix + providerClient.getDataForPatient(patientId);
+        mailSender.sendMail(subject + patientId, recipientEmail, getEmailText(abnormalPulseValue));
 
-            // Send email
-            return sesClient.sendEmail(emailRequest);
+    }
 
-        } catch (SesException e) {
-            logger.log("severe", "error of sending mail: " + e.awsErrorDetails().errorMessage());
-            throw new RuntimeException(e);
+    private String getProviderClientConectionString() {
+        String res = env.get("PROVIDER_CLIENT_CONNECTION_STRING");
+        if (res == null) {
+            logger.log("severe", "error: PROVIDER_CLIENT_CONNECTION_STRING env. variable must exist");
+            throw new RuntimeException("PROVIDER_CLIENT_CONNECTION_STRING env. variable must exist");
         }
+        return res;
     }
 
     private String getEmailText(AbnormalPulseValue abnormalPulseValue) {
