@@ -31,7 +31,7 @@ public class AppEmailNotifier {
                     logger, providerClientConnectionString);
             mailSender = MailSender.getMailSender(mailSenderClassName, logger);
         } catch (Exception e) {
-            logger.log("severe", "error: new code " + e);
+            logger.log("severe", "error: new_code " + e);
             throw new RuntimeException(e);
         }
     }
