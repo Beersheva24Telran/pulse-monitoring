@@ -32,6 +32,7 @@ public class AppEmailNotifier {
                     logger, providerClientConnectionString);
             mailSender = MailSender.getMailSender(mailSenderClassName, logger);
         } catch (Exception e) {
+            logger.log("severe", "error: " + e);
             throw new RuntimeException(e);
         }
     }

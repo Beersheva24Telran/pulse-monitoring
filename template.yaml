@@ -96,6 +96,7 @@ Resources:
           ADDRESS_PREFIX: yuriaws25+
           SENDER_EMAIL_ADDRESS: yuriaws25@gmail.com
           EMAIL_SUBJECT: "Abnormal Pulse Value patient "
+          EMAIL_SENDER_CLASS_NAME: 
           PROVIDER_CLIENT_CONNECTION_STRING: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/email/"  
       Events:
         DynamoDbItemInsert:
