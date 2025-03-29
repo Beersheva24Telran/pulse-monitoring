@@ -8,15 +8,15 @@
     <artifactId>last-values-saver-impl</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
-    </properties>
+    <parent>
+        <groupId>telran.monitoring</groupId>
+        <artifactId>pulse-monitoring-parent</artifactId>
+        <version>0.0.1</version>
+    </parent>
     <dependencies>
         <dependency>
-            <groupId>telran.monitoring</groupId>
-            <artifactId>pulse-monitoring-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
         </dependency>
     </dependencies>
 
