@@ -113,7 +113,6 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Sub avg-values-bucket-${AWS::AccountId}-${AWS::Region}
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
