@@ -13,7 +13,7 @@ public class DataSourceSqlRange extends DataSourceSQL {
     private static final String GROUP_ID = "group_id";
     private static final String PATIENT_ID = "patient_id";
     private static final String STATEMENT_STRING = String.format("select %s, %s from groups where " +
-            "%s = (select %s from patients where %s = ?)",
+            "id = (select %s from patients where %s = ?)",
             MIN_PULSE_VALUE, MAX_PULSE_VALUE, GROUP_ID, PATIENT_ID);
 
     public DataSourceSqlRange() {
