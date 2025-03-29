@@ -11,7 +11,7 @@ public class DatSourceSqlEmail extends DataSourceSQL {
     private static final String PATIENTS_TABLE = "patients";
     private static final String PATIENT_ID = "patient_id";
 
-    protected DatSourceSqlEmail() {
+    public DatSourceSqlEmail() {
         super(String.format("select %s from %s where id = (select %s from %s where %s = ?)",
                 EMAIL_ADDRESS, NOTIFICATION_GROUPS_TABLE, NOTIFICATIONS_GROUP_ID,
                 PATIENTS_TABLE, PATIENT_ID));

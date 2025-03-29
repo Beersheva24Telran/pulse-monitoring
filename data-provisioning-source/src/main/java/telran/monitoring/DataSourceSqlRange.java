@@ -16,7 +16,7 @@ public class DataSourceSqlRange extends DataSourceSQL {
             "%s = (select %s from patients where %s = ?)",
             MIN_PULSE_VALUE, MAX_PULSE_VALUE, GROUP_ID, PATIENT_ID);
 
-    protected DataSourceSqlRange() {
+    public DataSourceSqlRange() {
         super(STATEMENT_STRING);
 
     }
