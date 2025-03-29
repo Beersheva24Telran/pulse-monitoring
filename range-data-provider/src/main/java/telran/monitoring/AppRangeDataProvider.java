@@ -10,7 +10,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import telran.monitoring.logging.*;
 
 public class AppRangeDataProvider implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    protected static final String DEFAULT_DATA_SOURCE_CLASS_NAME = "telran.monitoring.DatSourceSqlRange";
+    protected static final String DEFAULT_DATA_SOURCE_CLASS_NAME = "telran.monitoring.DataSourceSqlRange";
     Map<String, String> env = System.getenv();
     
     String dataSourceClassName = getDataSourceClassName();
