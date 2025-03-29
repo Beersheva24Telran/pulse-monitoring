@@ -86,7 +86,7 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Sub jump-recognizer-bucket-${AWS::AccountId}-${AWS::Region}
+     
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
